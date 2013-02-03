@@ -30,7 +30,7 @@ class RSpecConsole::ConfigCache
           config.send(msg[:method], *msg[:args], &msg[:block])
         end
       end
-      ::RSpec.world.shared_example_groups.merge!(self.shared_examples_groups)
+      ::RSpec.world.shared_example_groups.merge!(self.shared_examples_groups || {})
 
     else
       # record
