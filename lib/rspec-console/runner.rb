@@ -1,8 +1,8 @@
 class RSpecConsole::Runner
   def self.reset(args)
-    require 'rspec'
+    require 'rspec/core'
 
-    if Gem.loaded_specs['rspec'].version < Gem::Version.new('2.9.10')
+    if Gem.loaded_specs['rspec-core'].version < Gem::Version.new('2.9.10')
       raise 'Please use RSpec 2.9.10 or later'
     end
 
