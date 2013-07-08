@@ -30,7 +30,7 @@ class RSpecConsole::ConfigCache
           config.send(msg[:method], *msg[:args], &msg[:block])
         end
       end
-      ::RSpec.world.shared_example_groups.merge!(self.shared_examples_groups || {})
+      ::RSpec.world.shared_example_groups.merge!(self.shared_examples_groups || {}) rescue nil
 
     else
       # record
@@ -40,7 +40,7 @@ class RSpecConsole::ConfigCache
       ::RSpec.configuration = self.proxy
       yield
       ::RSpec.configuration = real_config
-      self.shared_examples_groups = ::RSpec.world.shared_example_groups.dup
+      self.shared_examples_groups = ::RSpec.world.shared_example_groups.dup rescue nil
 
       # rspec-rails/lib/rspec/rails/view_rendering.rb add methods on the
       # configuration singleton. Need advice to copy them without going down
