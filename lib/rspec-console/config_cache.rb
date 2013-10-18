@@ -69,3 +69,14 @@ class Proxy < Struct.new(:output, :target)
     self.target.send(method, *args, &block)
   end
 end
+
+# For compatibility with Ruby 1.8.x outside of the Rails framework
+if RUBY_VERSION =~ /1.8/
+  unless defined?(Rails)
+    class Object
+      def singleton_class
+        class << self; self; end
+      end
+    end
+  end
+end
