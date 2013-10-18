@@ -50,7 +50,7 @@ class RSpecConsole::ConfigCache
     # Well, instead of copying them, we redirect them to the configuration
     # proxy. Looks like it good enough.
     proxy = self.proxy
-    ::RSpec.configuration.define_singleton_method(:method_missing) do |method, *args, &block|
+    ::RSpec.configuration.singleton_class.send :define_method, :method_missing, lambda do |method, *args, &block|
       proxy.send(method, *args, &block)
     end
 
