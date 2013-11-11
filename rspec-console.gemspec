@@ -15,6 +15,7 @@ Gem::Specification.new do |s|
   s.description = "Run RSpec tests in your console"
 
   s.add_dependency 'rails-env-switcher'
+  s.add_development_dependency 'rspec'
 
   s.files        = Dir["lib/**/*"] + ['README.md']
   s.require_path = 'lib'
