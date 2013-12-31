@@ -20,12 +20,17 @@ class RSpecConsole::Runner
     end
   end
 
-  def self.run(args)
-    require 'rails-env-switcher'
+  def self._run(args)
+    reset(args)
+    ::RSpec::Core::CommandLine.new(args).run(STDERR, STDOUT)
+  end
 
-    RailsEnvSwitcher.with_env('test', :reload => true) do
-      reset(args)
-      ::RSpec::Core::CommandLine.new(args).run(STDERR, STDOUT)
+  def self.run(args)
+    if defined?(Rails)
+      require 'rails-env-switcher'
+      RailsEnvSwitcher.with_env('test', :reload => true) { _run(args) }
+    else
+      _run(args)
     end
   end
 
