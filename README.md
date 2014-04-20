@@ -17,13 +17,23 @@ Install it with:
 gem 'rspec-console'
 ```
 
+Ensure you turned off Rails's `cache_classes` in the config/environment/test.rb file.
+
+```ruby
+Rails.application.configure do
+  # turn off this!
+  conig.cache_classes = false
+end
+```
+
 If you have [Pry](https://github.com/pry/pry) installed, you will have access to the `rspec` command
 in your console, which works exactly like the shell command line rspec one.
 
 
 ```
-pafy@bisou ~/prj/sniper [master●] % rails c
-~/prj/crowdtap/sniper (development) > rspec spec/integration/closing_brand_action_spec.rb:33 --format=doc
+# Launch Rails console with test environment!
+pafy@bisou ~/prj/sniper [master●] % rails c test
+~/prj/crowdtap/sniper (test) > rspec spec/integration/closing_brand_action_spec.rb:33 --format=doc
 Run options: include {:locations=>{"./spec/integration/closing_brand_action_spec.rb"=>[33]}}
 
 Sniper
@@ -32,7 +42,7 @@ Sniper
 
 Finished in 0.12654 seconds
 1 example, 0 failures
-~/prj/crowdtap/sniper (development) >
+~/prj/crowdtap/sniper (test) >
 ```
 
 If you don't have pry, you can use:
