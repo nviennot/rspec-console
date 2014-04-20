@@ -11,27 +11,42 @@ Best served chilled with [irb-config](https://github.com/nviennot/irb-config).
 Usage
 ------
 
-Install it with:
+### 1) Install rspec-console with:
 
 ```ruby
 gem 'rspec-console'
 ```
 
-Ensure you turned off Rails's `cache_classes` in the config/environment/test.rb file.
+### 2) With Rails, disable cache\_classes so reload! function properly
+
+Ensure you turned off Rails's `cache_classes` in the config/environment/test.rb file:
 
 ```ruby
 Rails.application.configure do
   # turn off this!
   conig.cache_classes = false
 end
+
+### 3) Launch your console
+
+With Rails, launch your console with `rails c test.
+
 ```
+### 4) Launch your tests
 
 If you have [Pry](https://github.com/pry/pry) installed, you will have access to the `rspec` command
 in your console, which works exactly like the shell command line rspec one.
 
+If you don't have pry, you can use:
+
+```ruby
+RSpecConsole.run 'spec/integration/closing_brand_action_spec.rb:33' '--format=doc'
+```
+
+Example
+-------
 
 ```
-# Launch Rails console with test environment!
 pafy@bisou ~/prj/sniper [master●] % rails c test
 ~/prj/crowdtap/sniper (test) > rspec spec/integration/closing_brand_action_spec.rb:33 --format=doc
 Run options: include {:locations=>{"./spec/integration/closing_brand_action_spec.rb"=>[33]}}
@@ -43,12 +58,6 @@ Sniper
 Finished in 0.12654 seconds
 1 example, 0 failures
 ~/prj/crowdtap/sniper (test) >
-```
-
-If you don't have pry, you can use:
-
-```ruby
-RSpecConsole.run 'spec/integration/closing_brand_action_spec.rb:33' '--format=doc'
 ```
 
 TODO
