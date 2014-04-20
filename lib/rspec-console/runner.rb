@@ -21,53 +21,14 @@ class RSpecConsole::Runner
       end
     end
 
-    def _run(args)
+    def run(args)
+      RSpecConsole.hooks.each(&:call)
       reset(args)
       ::RSpec::Core::CommandLine.new(args).run(STDERR, STDOUT)
     end
 
-    def run(args)
-      if defined?(Rails)
-        with_warnings { _run(args) }
-      else
-        _run(args)
-      end
-    end
-
     def config_cache
       @config_cache ||= RSpecConsole::ConfigCache.new
-    end
-
-    private
-
-    def with_warnings(&cont)
-      warn_cache_classes if turned_on_cache_classes?
-      warn_env || return unless Rails.env == 'test'
-
-      cont.call
-    end
-
-    def turned_on_cache_classes?
-      Rails.application.config.cache_classes
-    end
-
-    def warn_cache_classes
-      STDERR.puts <<-MSG
-[WARNING]
-Rails's cache_classes must be turned off.
-Turn off in config/environments/test.rb:
-
-  Rails.application.configure do
-    conig.cache_classes = false
-  end
-
-      MSG
-    end
-
-    def warn_env
-      STDERR.puts <<-MSG
-ERROR: Rails env must be set as test (use `rails console test` to run console).
-      MSG
     end
   end
 end
