@@ -14,7 +14,6 @@ Gem::Specification.new do |s|
   s.summary     = "Run RSpec tests in your console"
   s.description = "Run RSpec tests in your console"
 
-  s.add_dependency 'rails-env-switcher'
   s.add_dependency 'bond'
   s.add_development_dependency 'rspec'
 
