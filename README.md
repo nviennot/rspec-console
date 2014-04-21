@@ -26,12 +26,12 @@ Rails.application.configure do
   # turn off this!
   conig.cache_classes = false
 end
+```
 
 ### 3) Launch your console
 
-With Rails, launch your console with `rails c test.
+With Rails, launch your console with `rails c test`.
 
-```
 ### 4) Launch your tests
 
 If you have [Pry](https://github.com/pry/pry) installed, you will have access to the `rspec` command
