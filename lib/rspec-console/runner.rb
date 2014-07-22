@@ -14,7 +14,7 @@ class RSpecConsole::Runner
       config_cache.cache do
         ::RSpec.configure do |config|
           config.output_stream = STDOUT
-          config.color_enabled = true
+          config.color         = true
         end
 
         require "./spec/spec_helper"
