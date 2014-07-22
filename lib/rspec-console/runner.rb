@@ -9,22 +9,32 @@ class RSpecConsole::Runner
 
       ::RSpec::Core::Runner.disable_autorun!
       ::RSpec::Core::Configuration.class_eval { define_method(:command) { 'rspec' } }
-      ::RSpec.reset
 
-      config_cache.cache do
-        ::RSpec.configure do |config|
-          config.output_stream = STDOUT
-          config.color         = true
+      if ::RSpec::Core::Version::STRING >= "3.0.0"
+        ::RSpec.world.reset
+        ::RSpec.configuration.reset
+      else
+        ::RSpec.reset
+
+        config_cache.cache do
+          ::RSpec.configure do |config|
+            config.output_stream = STDOUT
+            config.color         = true
+          end
+
+          require "./spec/spec_helper"
         end
-
-        require "./spec/spec_helper"
       end
     end
 
     def run(args)
       RSpecConsole.hooks.each(&:call)
       reset(args)
-      ::RSpec::Core::CommandLine.new(args).run(STDERR, STDOUT)
+      if ::RSpec::Core::Version::STRING >= "3.0.0"
+        ::RSpec::Core::Runner.run(args)
+      else
+        ::RSpec::Core::CommandLine.new(args).run(STDERR, STDOUT)
+      end
     end
 
     def config_cache
