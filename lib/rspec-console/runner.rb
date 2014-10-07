@@ -14,17 +14,27 @@ class RSpecConsole::Runner
       config_cache.cache do
         ::RSpec.configure do |config|
           config.output_stream = STDOUT
-          config.color_enabled = true
+          config.color_enabled = true if config.respond_to?(:color_enabled=)
+          config.color         = true if config.respond_to?(:color=)
         end
 
-        require "./spec/spec_helper"
+        $LOAD_PATH << './spec'
+        require "spec_helper"
+        begin
+          require "rails_helper"
+        rescue LoadError
+        end
       end
     end
 
     def run(args)
       RSpecConsole.hooks.each(&:call)
       reset(args)
-      ::RSpec::Core::CommandLine.new(args).run(STDERR, STDOUT)
+      if defined?(::RSpec::Core::CommandLine)
+        ::RSpec::Core::CommandLine.new(args).run(STDERR, STDOUT)
+      else
+        ::RSpec::Core::Runner.run(args, STDERR, STDOUT)
+      end
     end
 
     def config_cache
