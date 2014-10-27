@@ -13,6 +13,7 @@ Gem::Specification.new do |s|
   s.homepage    = "http://github.com/nviennot/rspec-console"
   s.summary     = "Run RSpec tests in your console"
   s.description = "Run RSpec tests in your console"
+  s.license     = "MIT"
 
   s.add_dependency 'bond'
   s.add_development_dependency 'rspec'
