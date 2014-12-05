@@ -24,7 +24,7 @@ Ensure you turned off Rails's `cache_classes` in the config/environment/test.rb 
 ```ruby
 Rails.application.configure do
   # turn off this!
-  conig.cache_classes = false
+  config.cache_classes = false
 end
 ```
 
