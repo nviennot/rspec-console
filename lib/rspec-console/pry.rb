@@ -9,6 +9,7 @@ module RSpecConsole::Pry
         end
 
         def complete(input)
+          require 'bond'
           super + Bond::Rc.files(input.split(" ").last || '')
         end
       end
