@@ -23,7 +23,7 @@ describe RSpecConsole::Pry do
         to receive(:create_command).
       with(
         "rspec",
-        "Works pretty much like the regular rspec command"
+        "Runs specs; to silence ActiveRecord output use SILENCE_AR=true"
       )
       ::Pry::CommandSet.new(&proc)
     end

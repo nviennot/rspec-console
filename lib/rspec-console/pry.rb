@@ -1,11 +1,12 @@
 module RSpecConsole::Pry
   def self.setup
-    ::Pry::CommandSet.new(&rspec_command).tap { |cmd| ::Pry::Commands.import cmd }
+    ::Pry::CommandSet.new(&rspec_command).
+      tap { |cmd| ::Pry::Commands.import cmd }
   end
 
   def self.rspec_command
     Proc.new do
-      create_command "rspec", "Works pretty much like the regular rspec command" do
+      create_command "rspec", "Runs specs; to silence ActiveRecord output use SILENCE_AR=true" do
         group "Testing"
 
         def process(*args)
