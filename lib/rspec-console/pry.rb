@@ -10,7 +10,7 @@ module RSpecConsole::Pry
         group "Testing"
 
         def process(*args)
-          if defined?(ActiveRecord) && ENV['SILENCE_AR'] == true
+          if defined?(ActiveRecord) == 'constant' && ENV['SILENCE_AR'] == 'true'
             # Silence active record logger while running rspec from console
             old_logger = ActiveRecord::Base.logger
             ActiveRecord::Base.logger = Logger.new("#{Rails.root}/log/test.log")
@@ -18,7 +18,7 @@ module RSpecConsole::Pry
 
           RSpecConsole::Runner.run(args)
 
-          if defined?(ActiveRecord) && ENV['SILENCE_AR'] == true
+          if defined?(ActiveRecord) == 'constant' && ENV['SILENCE_AR'] == 'true'
             # Restore default logger
             ActiveRecord::Base.logger = old_logger
           end
