@@ -8,7 +8,7 @@ describe RSpecConsole::ConfigCache do
   describe "#cache" do
     it "defines method_missing method on RSpec.configuration's singleton class" do
       cache.cache {}
-      RSpec.configuration.respond_to?(:method_missing).should == true
+      expect(RSpec.configuration.respond_to?(:method_missing)).to be_true
     end
   end
 end
