@@ -14,10 +14,12 @@ module RSpecConsole::Pry
 
       def with_ar_silenced(&block)
         return block.call unless defined?(ActiveRecord) && ENV['SILENCE_AR']
-        old_logger, ActiveRecord::Base.logger = ActiveRecord::Base.logger, nil
-        block.call
-      ensure
-        ActiveRecord::Base.logger = old_logger
+        begin
+          old_logger, ActiveRecord::Base.logger = ActiveRecord::Base.logger, nil
+          block.call
+        ensure
+          ActiveRecord::Base.logger = old_logger
+        end
       end
 
       def complete(input)
