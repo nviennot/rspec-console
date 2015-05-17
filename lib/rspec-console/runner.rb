@@ -31,6 +31,7 @@ class RSpecConsole::Runner
       RSpecConsole.hooks.each(&:call)
       reset(args)
       if defined?(::RSpec::Core::CommandLine)
+        ::RSpec.configuration.reset
         ::RSpec::Core::CommandLine.new(args).run(STDERR, STDOUT)
       else
         ::RSpec::Core::Runner.run(args, STDERR, STDOUT)
