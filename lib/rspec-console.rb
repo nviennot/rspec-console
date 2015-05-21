@@ -20,7 +20,7 @@ module RSpecConsole
 
   # We only want the test env
   register_hook do
-    if defined?(Rails) && !Rails.env.test?
+    if defined?(Rails) && !Rails.env =~ /test/
       raise "Rails env must be set as test (use `rails console test` to launch the console)."
     end
   end
