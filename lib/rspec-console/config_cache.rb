@@ -46,7 +46,7 @@ class RSpecConsole::ConfigCache
       original_config = ::RSpec.configuration
 
       # Proxy output, target
-      self.proxy = Proxy.new([], original_config)
+      self.proxy = Proxy.new(original_config)
 
       ::RSpec.configuration = self.proxy
 
@@ -89,7 +89,7 @@ class RSpecConsole::ConfigCache
 end
 
 # Proxy is really the recorder
-class Proxy < Struct.new(:output, :target)
+class Proxy < Struct.new(:target,:output) { def initialize(target, output=[]); super; end }
   [:include, :extend].each do |method|
     define_method(method) do |*args|
       method_missing(method, *args)
