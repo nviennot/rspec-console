@@ -58,11 +58,10 @@ class RSpecConsole::ConfigCache
       yield
 
       ::RSpec.configuration = real_config
-
       if version >= Gem::Version.new('3')
-        recorded_registry = ::RSpec.world.shared_example_group_registry.dup rescue nil
+        self.recorded_registry = ::RSpec.world.shared_example_group_registry.dup rescue nil
       else
-        recorded_registry = ::RSpec.world.shared_example_groups.dup rescue nil
+        self.recorded_registry = ::RSpec.world.shared_example_groups.dup rescue nil
       end
 
       # TODO
