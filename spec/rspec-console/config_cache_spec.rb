@@ -27,4 +27,11 @@ describe RSpecConsole::ConfigCache do
       expect(RSpec.configuration.respond_to?(:method_missing)).to eq(true)
     end
   end
+
+  describe "Proxy" do
+    it "records the original config" do
+      proxy = Proxy.new(::RSpec.configuration, ::RSpec.configuration)
+      expect(proxy.output).to eq(proxy.target)
+    end
+  end
 end

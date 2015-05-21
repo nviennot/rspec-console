@@ -14,30 +14,25 @@
 # RSpec 2 and 3 have different APIs for accessing shared_examples. 3 has
 # the concept of a "registry" whereas 2 does not.
 class RSpecConsole::ConfigCache
-  attr_accessor :proxy, :recorded_config, :recorded_registry, :version
+  attr_accessor :proxy, :recorded_registry, :version
 
   def initialize
+    # allow writing to configuration
     ::RSpec.instance_eval do
       def self.configuration=(value)
         @configuration = value
       end
     end
-    @recorded_config = []
     @version = Gem.loaded_specs['rspec-core'].version
   end
 
   def cache
-    if self.proxy
-      # replay
-      ::RSpec.configure do |config|
-        self.recorded_config.each do |msg|
-          config.send(msg[:method], *msg[:args], &msg[:block])
-        end
-      end
+    if have_recording?
+      ::RSpec.configure &replay_recorded_config
 
       if version >= Gem::Version.new('3')
-        # we only need what was sent to "main"
         recorded_examples = recorded_registry.send(:shared_example_groups)[:main] rescue nil
+
         unless recorded_examples.nil?
           ::RSpec.world.shared_example_group_registry.add(:main,
                                                           recorded_examples.keys.first,
@@ -48,16 +43,18 @@ class RSpecConsole::ConfigCache
       end
     else
       # record
-      real_config = ::RSpec.configuration
+      original_config = ::RSpec.configuration
 
-      self.proxy = Proxy.new(self.recorded_config, real_config)
+      # Proxy output, target
+      self.proxy = Proxy.new([], original_config)
 
       ::RSpec.configuration = self.proxy
 
       # spec helper is called during this yield, see #reset
       yield
 
-      ::RSpec.configuration = real_config
+      ::RSpec.configuration = original_config
+
       if version >= Gem::Version.new('3')
         self.recorded_registry = ::RSpec.world.shared_example_group_registry.dup rescue nil
       else
@@ -72,14 +69,26 @@ class RSpecConsole::ConfigCache
 
     # Well, instead of copying them, we redirect them to the configuration
     # proxy. Looks like it's good enough.
-    proxy = self.proxy
-
+    # delegating to the proxy when we're missing a method
     ::RSpec.configuration.singleton_class.send(:define_method, :method_missing) do |method, *args, &block|
-      proxy.send(method, *args, &block)
+      self.proxy.send(method, *args, &block)
     end
+  end
+
+  private
+  def replay_recorded_config
+    Proc.new do |config|
+      self.proxy.output.each do |msg|
+        config.send(msg[:method], *msg[:args], &msg[:block])
+      end
+    end
+  end
+  def have_recording?
+    self.proxy
   end
 end
 
+# Proxy is really the recorder
 class Proxy < Struct.new(:output, :target)
   [:include, :extend].each do |method|
     define_method(method) do |*args|
@@ -88,7 +97,7 @@ class Proxy < Struct.new(:output, :target)
   end
 
   def method_missing(method, *args, &block)
-    self.output << {method: method, args: args, block: block}
+    self.output << { method: method, args: args, block: block }
     self.target.send(method, *args, &block)
   end
 end
