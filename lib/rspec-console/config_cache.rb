@@ -22,9 +22,11 @@ class RSpecConsole::ConfigCache
 
       if version >= Gem::Version.new('3')
         recorded_examples = recorded_registry.send(:shared_example_groups)[:main] rescue nil
-        ::RSpec.world.shared_example_group_registry.add(:main,
-                                                        recorded_examples.keys.first,
-                                                        &recorded_examples.values.first) rescue nil
+        unless recorded_examples.empty?
+          ::RSpec.world.shared_example_group_registry.add(:main,
+                                                          recorded_examples.keys.first,
+                                                          &recorded_examples.values.first)
+        end
       else
         ::RSpec.world.shared_example_groups.merge!(recorded_registry || {}) rescue nil
       end
