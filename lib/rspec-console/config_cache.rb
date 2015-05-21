@@ -1,19 +1,19 @@
+# We have to reset the RSpec.configuration, because it contains a lot of
+# information related to the current test (what's running, what are the
+# different test results, etc).
+#
+# RSpec.configuration gets also loaded with a bunch of stuff from the
+# 'spec/spec_helper.rb' file. Often that instance is extended with other
+# modules (FactoryGirl, Mocha,...) and we don't want to replace requires with
+# load all around the place.
+#
+# Instead, we cache whatever is done to RSpec.configuration during the
+# first invokration of require('spec_helper').
+# This is done by interposing the Proxy class on top of RSpec.configuration.
+#
+# RSpec 2 and 3 have different APIs for accessing shared_examples. 3 has
+# the concept of a "registry" whereas 2 does not.
 class RSpecConsole::ConfigCache
-  # We have to reset the RSpec.configuration, because it contains a lot of
-  # information related to the current test (what's running, what are the
-  # different test results, etc).
-  #
-  # RSpec.configuration gets also loaded with a bunch of stuff from the
-  # 'spec/spec_helper.rb' file. Often that instance is extended with other
-  # modules (FactoryGirl, Mocha,...) and we don't want to replace requires with
-  # load all around the place.
-  #
-  # Instead, we cache whatever is done to RSpec.configuration during the
-  # first invokration of require('spec_helper').
-  # This is done by interposing the Proxy class on top of RSpec.configuration.
-  #
-  # RSpec 2 and 3 have different APIs for accessing shared_examples. 3 has
-  # the concept of a "registry" whereas 2 does not.
   attr_accessor :proxy, :recorded_config, :recorded_registry, :version
 
   def initialize

@@ -1,3 +1,4 @@
+# This class wraps the core rspec runner and manages the environment around it.
 class RSpecConsole::Runner
   class << self
     def run(args)
