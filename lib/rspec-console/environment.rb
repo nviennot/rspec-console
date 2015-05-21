@@ -2,7 +2,7 @@ class RSpecConsole::Environment
   class << self
     def reset
       require 'rspec/core'
-      raise VersionError if under_version_3?
+      raise VersionError if under_version_2_9?
 
       ::RSpec::Core::Runner.disable_autorun!
       ::RSpec::Core::Configuration.class_eval { define_method(:command) { 'rspec' } }
@@ -33,7 +33,7 @@ class RSpecConsole::Environment
       end
     end
 
-    def under_version_3?
+    def under_version_2_9?
       Gem.loaded_specs['rspec-core'].version < Gem::Version.new('2.9.10')
     end
   end
