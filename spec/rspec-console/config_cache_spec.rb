@@ -17,6 +17,11 @@ describe RSpecConsole::ConfigCache do
       expect(Proxy).to receive(:new).and_call_original
       config_cache.cache &config_block
     end
+    it "delegates through proxy on repeated runs" do
+      config_cache.cache &config_block
+      expect(Proxy).to_not receive(:new)
+      config_cache.cache &config_block
+    end
     it "defines method_missing method on RSpec.configuration's singleton class" do
       config_cache.cache &config_block
       expect(RSpec.configuration.respond_to?(:method_missing)).to eq(true)

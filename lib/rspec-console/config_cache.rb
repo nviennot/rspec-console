@@ -12,6 +12,8 @@ class RSpecConsole::ConfigCache
   # first invokration of require('spec_helper').
   # This is done by interposing the Proxy class on top of RSpec.configuration.
   #
+  # RSpec 2 and 3 have different APIs for accessing shared_examples. 3 has
+  # the concept of a "registry" whereas 2 does not.
   attr_accessor :proxy, :recorded_config, :recorded_registry, :version
 
   def initialize
@@ -36,13 +38,13 @@ class RSpecConsole::ConfigCache
       if version >= Gem::Version.new('3')
         # we only need what was sent to "main"
         recorded_examples = recorded_registry.send(:shared_example_groups)[:main] rescue nil
-        if recorded_examples.present?
+        unless recorded_examples.nil?
           ::RSpec.world.shared_example_group_registry.add(:main,
                                                           recorded_examples.keys.first,
                                                           &recorded_examples.values.first)
         end
       else
-        ::RSpec.world.shared_example_groups.merge!(self.shared_examples_groups || {}) rescue nil
+        ::RSpec.world.shared_example_groups.merge!(recorded_registry || {}) rescue nil
       end
     else
       # record
@@ -89,16 +91,5 @@ class Proxy < Struct.new(:output, :target)
   def method_missing(method, *args, &block)
     self.output << {method: method, args: args, block: block}
     self.target.send(method, *args, &block)
-  end
-end
-
-# For compatibility with Ruby 1.8.x outside of the Rails framework
-if RUBY_VERSION =~ /1.8/
-  unless defined?(Rails)
-    class Object
-      def singleton_class
-        class << self; self; end
-      end
-    end
   end
 end

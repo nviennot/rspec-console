@@ -1,3 +1,5 @@
 module RSpecConsole
-  class SharedExamplesError < StandardError; end
+  class VersionError < StandardError
+    'Please use RSpec 2.9.10 or later'
+  end
 end
