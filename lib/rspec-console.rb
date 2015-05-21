@@ -1,5 +1,7 @@
 module RSpecConsole
   autoload :ConfigCache, 'rspec-console/config_cache'
+  autoload :Environment, 'rspec-console/environment'
+  autoload :Proxy,       'rspec-console/proxy'
   autoload :Runner,      'rspec-console/runner'
   autoload :Pry,         'rspec-console/pry'
 

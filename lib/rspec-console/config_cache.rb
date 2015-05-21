@@ -31,8 +31,7 @@ class RSpecConsole::ConfigCache
     else
       # record
       original_config = ::RSpec.configuration
-
-      self.proxy = Proxy.new(original_config)
+      self.proxy = RSpecConsole::Proxy.new(original_config)
 
       ::RSpec.configuration = self.proxy
 
@@ -46,17 +45,10 @@ class RSpecConsole::ConfigCache
         self.recorded_registry = ::RSpec.world.shared_example_groups.dup rescue nil
       end
 
-      # TODO
-      # rspec-rails/lib/rspec/rails/view_rendering.rb add methods on the
-      # configuration singleton. Need advice to copy them without going down
-      # the road with object2module.
-    end
-
-    # Well, instead of copying them, we redirect them to the configuration
-    # proxy. Looks like it's good enough.
-    # delegating to the proxy when we're missing a method
-    ::RSpec.configuration.singleton_class.send(:define_method, :method_missing) do |method, *args, &block|
-      self.proxy.send(method, *args, &block)
+      # forward to proxy object
+      ::RSpec.configuration.singleton_class.send(:define_method, :method_missing) do |method, *args, &block|
+        self.proxy.send(method, *args, &block)
+      end
     end
   end
 
@@ -68,24 +60,12 @@ class RSpecConsole::ConfigCache
       end
     end
   end
+
   def have_recording?
     self.proxy
   end
+
   def version
     Gem.loaded_specs['rspec-core'].version
-  end
-end
-
-# Proxy is really the recorder
-class Proxy < Struct.new(:target,:output) { def initialize(target, output=[]); super; end }
-  [:include, :extend].each do |method|
-    define_method(method) do |*args|
-      method_missing(method, *args)
-    end
-  end
-
-  def method_missing(method, *args, &block)
-    self.output << { method: method, args: args, block: block }
-    self.target.send(method, *args, &block)
   end
 end
