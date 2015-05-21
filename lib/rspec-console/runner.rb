@@ -1,6 +1,16 @@
 class RSpecConsole::Runner
   class << self
-    def reset(args)
+    def run(args)
+      RSpecConsole.hooks.each(&:call)
+      reset_environment
+      if defined?(::RSpec::Core::CommandLine)
+        ::RSpec::Core::CommandLine.new(args).run(STDERR, STDOUT)
+      else
+        ::RSpec::Core::Runner.run(args, STDERR, STDOUT)
+      end
+    end
+
+    def reset_environment
       require 'rspec/core'
 
       if Gem.loaded_specs['rspec-core'].version < Gem::Version.new('2.9.10')
@@ -27,16 +37,7 @@ class RSpecConsole::Runner
       end
     end
 
-    def run(args)
-      RSpecConsole.hooks.each(&:call)
-      reset(args)
-      if defined?(::RSpec::Core::CommandLine)
-        ::RSpec::Core::CommandLine.new(args).run(STDERR, STDOUT)
-      else
-        ::RSpec::Core::Runner.run(args, STDERR, STDOUT)
-      end
-    end
-
+    private
     def config_cache
       @config_cache ||= RSpecConsole::ConfigCache.new
     end

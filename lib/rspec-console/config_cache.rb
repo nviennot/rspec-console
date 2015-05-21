@@ -12,7 +12,7 @@ class RSpecConsole::ConfigCache
   # first invokration of require('spec_helper').
   # This is done by interposing the Proxy class on top of RSpec.configuration.
   #
-  attr_accessor :proxy, :recorded_config, :shared_examples_groups
+  attr_accessor :proxy, :recorded_config, :recorded_registry, :version
 
   def initialize
     ::RSpec.instance_eval do
@@ -20,6 +20,8 @@ class RSpecConsole::ConfigCache
         @configuration = value
       end
     end
+    @recorded_config = []
+    @version = Gem.loaded_specs['rspec-core'].version
   end
 
   def cache
@@ -30,30 +32,50 @@ class RSpecConsole::ConfigCache
           config.send(msg[:method], *msg[:args], &msg[:block])
         end
       end
-      ::RSpec.world.shared_example_groups.merge!(self.shared_examples_groups || {}) rescue nil
 
+      if version >= Gem::Version.new('3')
+        # we only need what was sent to "main"
+        recorded_examples = recorded_registry.send(:shared_example_groups)[:main] rescue nil
+        if recorded_examples.present?
+          ::RSpec.world.shared_example_group_registry.add(:main,
+                                                          recorded_examples.keys.first,
+                                                          &recorded_examples.values.first)
+        end
+      else
+        ::RSpec.world.shared_example_groups.merge!(self.shared_examples_groups || {}) rescue nil
+      end
     else
       # record
       real_config = ::RSpec.configuration
-      self.recorded_config = []
-      self.proxy = Proxy.new(self.recorded_config, real_config)
-      ::RSpec.configuration = self.proxy
-      yield
-      ::RSpec.configuration = real_config
-      self.shared_examples_groups = ::RSpec.world.shared_example_groups.dup rescue nil
 
+      self.proxy = Proxy.new(self.recorded_config, real_config)
+
+      ::RSpec.configuration = self.proxy
+
+      # spec helper is called during this yield, see #reset
+      yield
+
+      ::RSpec.configuration = real_config
+
+      if version >= Gem::Version.new('3')
+        recorded_registry = ::RSpec.world.shared_example_group_registry.dup rescue nil
+      else
+        recorded_registry = ::RSpec.world.shared_example_groups.dup rescue nil
+      end
+
+      # TODO
       # rspec-rails/lib/rspec/rails/view_rendering.rb add methods on the
       # configuration singleton. Need advice to copy them without going down
       # the road with object2module.
     end
 
     # Well, instead of copying them, we redirect them to the configuration
-    # proxy. Looks like it good enough.
+    # proxy. Looks like it's good enough.
     proxy = self.proxy
+
     ::RSpec.configuration.singleton_class.send(:define_method, :method_missing) do |method, *args, &block|
       proxy.send(method, *args, &block)
     end
-
   end
 end
 
@@ -65,7 +87,7 @@ class Proxy < Struct.new(:output, :target)
   end
 
   def method_missing(method, *args, &block)
-    self.output << {:method => method, :args => args, :block => block}
+    self.output << {method: method, args: args, block: block}
     self.target.send(method, *args, &block)
   end
 end
