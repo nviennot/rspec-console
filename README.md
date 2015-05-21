@@ -63,7 +63,7 @@ Finished in 0.12654 seconds
 TODO
 ----
 
-* Testing
+* Get tests to 100% coverage. Currently at 106 / 118 LOC (89.83%) covered.
 
 License
 -------

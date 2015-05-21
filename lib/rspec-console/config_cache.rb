@@ -21,14 +21,18 @@ class RSpecConsole::ConfigCache
       ::RSpec.configure &replay_recorded_config
 
       if version >= Gem::Version.new('3')
-        recorded_examples = recorded_registry.send(:shared_example_groups)[:main] rescue nil
-        unless recorded_examples.empty?
-          ::RSpec.world.shared_example_group_registry.add(:main,
-                                                          recorded_examples.keys.first,
-                                                          &recorded_examples.values.first)
+        unless shared_examples.empty?
+          ::RSpec.world.
+            shared_example_group_registry.
+          add(
+            :main,
+            shared_examples.keys.first,
+            &shared_examples.values.first
+          )
         end
       else
-        ::RSpec.world.shared_example_groups.merge!(recorded_registry || {}) rescue nil
+        ::RSpec.world.
+          shared_example_groups.merge!(recorded_registry || {}) rescue nil
       end
     else
       # record
@@ -42,9 +46,11 @@ class RSpecConsole::ConfigCache
       ::RSpec.configuration = original_config
 
       if version >= Gem::Version.new('3')
-        self.recorded_registry = ::RSpec.world.shared_example_group_registry.dup rescue nil
+        self.recorded_registry = ::RSpec.world.
+          shared_example_group_registry.dup rescue nil
       else
-        self.recorded_registry = ::RSpec.world.shared_example_groups.dup rescue nil
+        self.recorded_registry = ::RSpec.world.
+          shared_example_groups.dup rescue nil
       end
 
       # forward to proxy object
@@ -65,6 +71,11 @@ class RSpecConsole::ConfigCache
 
   def have_recording?
     self.proxy
+  end
+
+  def shared_examples
+    recorded_registry.
+      send(:shared_example_groups)[:main] rescue nil
   end
 
   def version
