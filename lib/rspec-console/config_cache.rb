@@ -14,17 +14,7 @@
 # RSpec 2 and 3 have different APIs for accessing shared_examples. 3 has
 # the concept of a "registry" whereas 2 does not.
 class RSpecConsole::ConfigCache
-  attr_accessor :proxy, :recorded_registry, :version
-
-  def initialize
-    # allow writing to configuration
-    ::RSpec.instance_eval do
-      def self.configuration=(value)
-        @configuration = value
-      end
-    end
-    @version = Gem.loaded_specs['rspec-core'].version
-  end
+  attr_accessor :proxy, :recorded_registry
 
   def cache
     if have_recording?
@@ -32,12 +22,9 @@ class RSpecConsole::ConfigCache
 
       if version >= Gem::Version.new('3')
         recorded_examples = recorded_registry.send(:shared_example_groups)[:main] rescue nil
-
-        unless recorded_examples.nil?
-          ::RSpec.world.shared_example_group_registry.add(:main,
-                                                          recorded_examples.keys.first,
-                                                          &recorded_examples.values.first)
-        end
+        ::RSpec.world.shared_example_group_registry.add(:main,
+                                                        recorded_examples.keys.first,
+                                                        &recorded_examples.values.first) rescue nil
       else
         ::RSpec.world.shared_example_groups.merge!(recorded_registry || {}) rescue nil
       end
@@ -45,13 +32,11 @@ class RSpecConsole::ConfigCache
       # record
       original_config = ::RSpec.configuration
 
-      # Proxy output, target
       self.proxy = Proxy.new(original_config)
 
       ::RSpec.configuration = self.proxy
 
-      # spec helper is called during this yield, see #reset
-      yield
+      yield # spec helper is called during this yield, see #reset
 
       ::RSpec.configuration = original_config
 
@@ -85,6 +70,9 @@ class RSpecConsole::ConfigCache
   end
   def have_recording?
     self.proxy
+  end
+  def version
+    Gem.loaded_specs['rspec-core'].version
   end
 end
 

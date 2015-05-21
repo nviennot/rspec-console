@@ -12,6 +12,13 @@ describe RSpecConsole::ConfigCache do
     end
   end
 
+  # to support behavior I saw but couldn't reason out
+  describe "#initialize" do
+    it "makes ::RSpec.configuration writable" do
+      expect(::RSpec.respond_to?(:configuration=)).to eq(true)
+    end
+  end
+
   describe "#cache" do
     it "creates a proxy on first run" do
       expect(Proxy).to receive(:new).and_call_original
