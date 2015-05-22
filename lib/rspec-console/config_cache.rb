@@ -10,9 +10,6 @@
 # Instead, we cache whatever is done to RSpec.configuration during the
 # first invokration of require('spec_helper').
 # This is done by interposing the Proxy class on top of RSpec.configuration.
-#
-# RSpec 2 and 3 have different APIs for accessing shared_examples. 3 has
-# the concept of a "registry" whereas 2 does not.
 class RSpecConsole::ConfigCache
   attr_accessor :proxy, :recorded_registry
 
@@ -20,6 +17,8 @@ class RSpecConsole::ConfigCache
     if have_recording?
       ::RSpec.configure &replay_recorded_config
 
+      # RSpec 2 and 3 have different APIs for accessing shared_examples. 3 has
+      # the concept of a "registry" whereas 2 does not.
       if version >= Gem::Version.new('3')
         unless shared_examples.empty?
           ::RSpec.world.

@@ -4,6 +4,7 @@ module RSpecConsole
   autoload :Proxy,       'rspec-console/proxy'
   autoload :Runner,      'rspec-console/runner'
   autoload :Pry,         'rspec-console/pry'
+  autoload :VersionError,'rspec-console/exceptions'
 
   class << self; attr_accessor :hooks; end
   self.hooks = []
@@ -21,7 +22,7 @@ module RSpecConsole
   # We only want the test env
   register_hook do
     if defined?(Rails) && !Rails.env =~ /test/
-      raise "Rails env must be set as test (use `rails console test` to launch the console)."
+      fail RSpecConsole::RailsEnvError
     end
   end
 
@@ -30,8 +31,8 @@ module RSpecConsole
     if defined?(Rails)
       if Rails.application.config.cache_classes
         STDERR.puts <<-MSG
-[WARNING]
-Rails's cache_classes must be turned off.
+        [WARNING]
+        Rails's cache_classes must be turned off.
 Turn off in config/environments/test.rb:
 
   Rails.application.configure do

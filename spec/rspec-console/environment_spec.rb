@@ -7,5 +7,11 @@ describe RSpecConsole::Environment do
         to receive(:cache)
       RSpecConsole::Environment.reset
     end
+    it "raises VersionError if under version 2.9.10" do
+      expect(RSpecConsole::Environment).
+        to receive(:under_version_2_9?).and_return(true)
+      expect{ RSpecConsole::Environment.reset }.
+        to raise_error(RSpecConsole::VersionError)
+    end
   end
 end
