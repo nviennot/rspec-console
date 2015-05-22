@@ -1,8 +1,12 @@
 module RSpecConsole
   class VersionError < StandardError
-    'Please use RSpec 2.9.10 or later'
+    def to_s
+      'Please use RSpec 2.9.10 or later'
+    end
   end
   class RailsEnvError < StandardError
-    'Rails env must be set as test (use `rails console test` to launch the console).'
+    def to_s
+      'Rails env must be set as test (use `rails console test` to launch the console).'
+    end
   end
 end

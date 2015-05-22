@@ -11,7 +11,7 @@ describe RSpecConsole::Environment do
       expect(RSpecConsole::Environment).
         to receive(:obsolete_rspec?).and_return(true)
       expect{ RSpecConsole::Environment.reset }.
-        to raise_error(RSpecConsole::VersionError)
+        to raise_error(RSpecConsole::VersionError, 'Please use RSpec 2.9.10 or later')
     end
   end
 end
