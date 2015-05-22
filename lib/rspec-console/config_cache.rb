@@ -52,8 +52,9 @@ class RSpecConsole::ConfigCache
           shared_example_groups.dup rescue nil
       end
 
-      # forward to proxy object
+      # forward to proxy object by delegating to it on any missing method
       ::RSpec.configuration.singleton_class.send(:define_method, :method_missing) do |method, *args, &block|
+        # note this is not called until runtime when a method is not found on RSpec.configuration
         self.proxy.send(method, *args, &block)
       end
     end
