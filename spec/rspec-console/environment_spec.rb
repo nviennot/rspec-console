@@ -9,7 +9,7 @@ describe RSpecConsole::Environment do
     end
     it "raises VersionError if under version 2.9.10" do
       expect(RSpecConsole::Environment).
-        to receive(:under_version_2_9?).and_return(true)
+        to receive(:obsolete_rspec?).and_return(true)
       expect{ RSpecConsole::Environment.reset }.
         to raise_error(RSpecConsole::VersionError)
     end
