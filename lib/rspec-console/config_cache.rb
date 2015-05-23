@@ -52,19 +52,19 @@ module RSpecConsole
           self.recorded_registry = ::RSpec.world.
             shared_example_groups.dup rescue nil
         end
-
-        # forward to proxy object by delegating to it on any missing method
-        ::RSpec.configuration.singleton_class.send(:define_method, :method_missing) do |method, *args, &block|
-        # note this is not called until runtime when a method is not found on RSpec.configuration
-        self.proxy.send(method, *args, &block)
-        end
+      end
+      proxy = self.proxy
+      # forward to proxy object by delegating to it on any missing method
+      ::RSpec.configuration.singleton_class.send(:define_method, :method_missing) do |method, *args, &block|
+      # note this is not called until runtime when a method is not found on RSpec.configuration
+      proxy.send(method, *args, &block)
       end
     end
 
     private
     def replay_recorded_config
       Proc.new do |config|
-        self.proxy.output.each do |msg|
+        proxy.persisted_config.each do |msg|
           config.send(msg[:method], *msg[:args], &msg[:block])
         end
       end

@@ -1,6 +1,7 @@
 # Proxy is really the recorder?
-class RSpecConsole::Proxy < Struct.new(:target,:output) do
-    def initialize(target, output=[]); super; end
+module RSpecConsole
+  class Proxy < Struct.new(:run_state,:persisted_config) do
+    def initialize(run_state, persisted_config=[]); super; end
   end
 
   [:include, :extend].each do |method|
@@ -10,12 +11,13 @@ class RSpecConsole::Proxy < Struct.new(:target,:output) do
   end
 
   def method_missing(method, *args, &block)
-    # output is the real cache
-    self.output << {
+    # persisted_config is the real cache
+    self.persisted_config << {
       method: method,
       args: args,
       block: block
     }
-    self.target.send(method, *args, &block)
+    self.run_state.send(method, *args, &block)
+  end
   end
 end

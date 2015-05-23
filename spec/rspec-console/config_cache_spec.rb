@@ -8,7 +8,6 @@ describe RSpecConsole::ConfigCache do
     Proc.new do
       ::RSpec.configure do |config|
         config.output_stream = STDOUT
-        config.add_setting :bogus_method
       end
     end
   end
@@ -30,6 +29,7 @@ describe RSpecConsole::ConfigCache do
       expect(RSpecConsole::Proxy).to_not receive(:new)
       config_cache.cache(&config_block)
     end
+
     context "when recording the config" do
       before(:each) do
         expect_any_instance_of(RSpecConsole::ConfigCache).to receive(:have_recording?).
@@ -45,6 +45,7 @@ describe RSpecConsole::ConfigCache do
         expect(config_cache.recorded_registry).to eq(shared_example_group)
       end
     end
+
     context "with recorded config" do
       before(:each) do
         expect_any_instance_of(RSpecConsole::ConfigCache).to receive(:have_recording?).
@@ -59,7 +60,7 @@ describe RSpecConsole::ConfigCache do
           and_return(
             double('shared_examples',
                    empty?: false,
-                   keys: ["method_name"],
+                   keys: ['method_name'],
                    values: [Proc.new{}]))
         config_cache.cache(&config_block)
       end
@@ -72,14 +73,27 @@ describe RSpecConsole::ConfigCache do
       end
     end
     it "defines method_missing method on RSpec.configuration's singleton class" do
-      expect(config_cache).to receive(:proxy).exactly(2).times
+      expect(config_cache).to receive(:proxy).exactly(3).times
       config_cache.cache(&config_block)
       expect(::RSpec.configuration.respond_to?(:method_missing)).to eq(true)
     end
-    it "sends any methods missing on RSpec.configuration to Proxy" do
-      config_cache.cache(&config_block)
-      # TODO binding.pry
-      expect(::RSpec.configuration.respond_to?(:bogus_method)).to eq true
+
+    context 'interaction with Proxy' do
+      let(:customized_config_block) do
+        proc do
+          ::RSpec.configure do |config|
+            config.output_stream = STDOUT
+            config.add_setting :bogus_method
+          end
+        end
+      end
+
+      it "sends any methods missing on RSpec.configuration to Proxy" do
+        ::RSpec.reset
+        expect(::RSpec.configuration.respond_to?(:bogus_method)).to eq false
+        config_cache.cache(&customized_config_block)
+        expect(::RSpec.configuration.respond_to?(:bogus_method)).to eq true
+      end
     end
   end
 end

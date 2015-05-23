@@ -4,7 +4,7 @@ describe RSpecConsole::Proxy do
   let(:proxy) { RSpecConsole::Proxy.new(RSpec.configuration) }
   it "records the original config" do
     proxy.ordering_manager
-    expect(proxy.output).to eq(
+    expect(proxy.persisted_config).to eq(
       [
         {
           method: :ordering_manager,
