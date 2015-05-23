@@ -4,7 +4,7 @@ class RSpecConsole::Runner
     def run(args)
       RSpecConsole.hooks.each(&:call)
 
-      RSpecConsole::Environment.reset
+      RSpecConsole::RSpecLastRunState.reset
 
       if defined?(::RSpec::Core::CommandLine)
         ::RSpec::Core::CommandLine.new(args).run(STDERR, STDOUT)

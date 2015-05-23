@@ -1,6 +1,6 @@
 module RSpecConsole
   # State of the last test run.
-  class Environment
+  class RSpecLastRunState
     class << self
       def reset
         require 'rspec/core'
