@@ -28,16 +28,23 @@ module RSpecConsole
 
   # Emit warning when reload cannot be called, or call reload!
   register_hook do
+    class String
+      def red
+        "\033[31m#{self}\033[0m"
+      end
+    end
     if defined?(Rails)
       if Rails.application.config.cache_classes
-        STDERR.puts <<-MSG
-        [WARNING]
-        Rails's cache_classes must be turned off.
-Turn off in config/environments/test.rb:
+        STDERR.puts <<-MSG.gsub(/^ {10}/, '')
+          #{"[ WARNING ]".red }
+          Rails's cache_classes must be turned off.
+          Turn it off in config/environments/test.rb:
 
-  Rails.application.configure do
-    conig.cache_classes = false
-  end
+            Rails.application.configure do
+              config.cache_classes = false
+            end
+
+          see https://github.com/nviennot/rspec-console#2-with-rails-disable-cache_classes-so-reload-function-properly
         MSG
       else
         ActionDispatch::Reloader.cleanup!
