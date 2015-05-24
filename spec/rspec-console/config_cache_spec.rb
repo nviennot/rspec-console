@@ -20,28 +20,40 @@ describe RSpecConsole::ConfigCache do
   end
 
   describe "#cache" do
+    it "defines method_missing method on RSpec.configuration's singleton class" do
+      expect(config_cache).to receive(:config_copy).exactly(3).times
+      config_cache.cache(&config_block)
+      expect(::RSpec.configuration.respond_to?(:method_missing)).to eq(true)
+    end
+
     it "creates a proxy on first run" do
       expect(RSpecConsole::Proxy).to receive(:new).and_call_original
       config_cache.cache(&config_block)
     end
+
     it "delegates through proxy on repeated runs" do
       config_cache.cache(&config_block)
       expect(RSpecConsole::Proxy).to_not receive(:new)
       config_cache.cache(&config_block)
     end
+  end
 
+  describe "#cache" do
     context "when recording the config" do
       before(:each) do
         expect_any_instance_of(RSpecConsole::ConfigCache).to receive(:have_recording?).
           and_return(false)
       end
+
       it "does a dup of shared example groups" do
         expect_any_instance_of(RSpecConsole::ConfigCache).to receive(:version).
           and_return(Gem::Version.new('2.10.9'))
-        shared_example_group = double("shared_example_group")
+
+        shared_example_group = double('shared_example_group')
         expect(::RSpec).to receive_message_chain(:world, :shared_example_groups, :dup).
           and_return(shared_example_group)
         config_cache.cache(&config_block)
+
         expect(config_cache.recorded_registry).to eq(shared_example_group)
       end
     end
@@ -52,9 +64,11 @@ describe RSpecConsole::ConfigCache do
           and_return(true)
         expect(::RSpec).to receive(:configure).and_return(nil)
       end
-      it "uses RSpec #add if version 3+ and shared_examples exist" do
+
+      it "uses RSpec #add if version 3+" do
         expect_any_instance_of(RSpecConsole::ConfigCache).to receive(:version).
           and_return(Gem::Version.new('3.1.4'))
+
         expect_any_instance_of(RSpecConsole::ConfigCache).to receive(:shared_examples).
           exactly(3).times.
           and_return(
@@ -62,20 +76,21 @@ describe RSpecConsole::ConfigCache do
                    empty?: false,
                    keys: ['method_name'],
                    values: [Proc.new{}]))
+
         config_cache.cache(&config_block)
       end
       it "simply merges in the recorded examples if RSpec 2" do
         expect_any_instance_of(RSpecConsole::ConfigCache).to receive(:version).
           and_return(Gem::Version.new('2.10.9'))
+        expect_any_instance_of(RSpecConsole::ConfigCache).to receive(:shared_examples).
+          exactly(2).times.
+          and_return({})
+
         expect(::RSpec).to receive_message_chain(:world, :shared_example_groups, :merge!).
           with({})
+
         config_cache.cache(&config_block)
       end
-    end
-    it "defines method_missing method on RSpec.configuration's singleton class" do
-      expect(config_cache).to receive(:proxy).exactly(3).times
-      config_cache.cache(&config_block)
-      expect(::RSpec.configuration.respond_to?(:method_missing)).to eq(true)
     end
 
     context 'interaction with Proxy' do
