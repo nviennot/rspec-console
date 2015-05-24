@@ -80,14 +80,16 @@ describe RSpecConsole::ConfigCache do
         config_cache.cache(&config_block)
       end
       it "simply merges in the recorded examples if RSpec 2" do
+        shared_examples = double('shared_examples', empty?: false)
+
         expect_any_instance_of(RSpecConsole::ConfigCache).to receive(:version).
           and_return(Gem::Version.new('2.10.9'))
         expect_any_instance_of(RSpecConsole::ConfigCache).to receive(:shared_examples).
           exactly(2).times.
-          and_return({})
+          and_return(shared_examples)
 
         expect(::RSpec).to receive_message_chain(:world, :shared_example_groups, :merge!).
-          with({})
+          with(shared_examples)
 
         config_cache.cache(&config_block)
       end

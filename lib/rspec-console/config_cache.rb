@@ -17,7 +17,7 @@ module RSpecConsole
     def cache
       if have_recording?
         ::RSpec.configure(&replay_recorded_config)
-        replay_shared_examples if shared_examples
+        replay_shared_examples unless shared_examples.empty?
       else # record
         original_config = ::RSpec.configuration
         self.config_copy = RSpecConsole::Proxy.new(original_config)
@@ -87,7 +87,7 @@ module RSpecConsole
 
     def shared_examples
       recorded_registry.
-        send(:shared_example_groups)[:main] rescue nil
+        send(:shared_example_groups)[:main] rescue recorded_registry
     end
 
     def version
