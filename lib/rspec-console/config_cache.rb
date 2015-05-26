@@ -1,4 +1,4 @@
-class RSpecConsole::ConfigCache
+module RSpecConsole
   # We have to reset the RSpec.configuration, because it contains a lot of
   # information related to the current test (what's running, what are the
   # different test results, etc).
@@ -11,72 +11,87 @@ class RSpecConsole::ConfigCache
   # Instead, we cache whatever is done to RSpec.configuration during the
   # first invokration of require('spec_helper').
   # This is done by interposing the Proxy class on top of RSpec.configuration.
-  #
-  attr_accessor :proxy, :recorded_config, :shared_examples_groups
+  class ConfigCache
+    attr_accessor :config_copy, :recorded_registry
 
-  def initialize
-    ::RSpec.instance_eval do
-      def self.configuration=(value)
-        @configuration = value
+    def cache
+      if have_recording?
+        ::RSpec.configure(&replay_recorded_config)
+        replay_shared_examples unless shared_examples.empty?
+      else # record
+        original_config = ::RSpec.configuration
+        self.config_copy = RSpecConsole::Proxy.new(original_config)
+
+        ::RSpec.configuration = self.config_copy
+
+        yield # spec helper is called during this yield, see #reset
+
+        ::RSpec.configuration = original_config
+
+        record_shared_examples
+      end
+      forwarding_address_for(::RSpec.configuration.singleton_class, self.config_copy)
+    end
+
+    private
+
+    def record_shared_examples
+      if rspec_over_3?
+        self.recorded_registry = ::RSpec.world.
+          shared_example_group_registry.dup rescue nil
+      else
+        self.recorded_registry = ::RSpec.world.
+          shared_example_groups.dup rescue nil
       end
     end
-  end
 
-  def cache
-    if self.proxy
-      # replay
-      ::RSpec.configure do |config|
-        self.recorded_config.each do |msg|
+    def forwarding_address_for(rspec_config, config_copy)
+      rspec_config.send(:define_method, :method_missing) do |method, *args, &block|
+      # note this is not called until runtime when a method is not found on RSpec.configuration
+      config_copy.send(method, *args, &block)
+      end
+    end
+
+    def replay_shared_examples
+      # RSpec 2 and 3 have different APIs for accessing shared_examples. 3 has
+      # the concept of a "registry" whereas 2 does not.
+      if rspec_over_3?
+        ::RSpec.world.
+          shared_example_group_registry.
+          add(
+            :main,
+            shared_examples.keys.first,
+            &shared_examples.values.first
+        )
+      else
+        ::RSpec.world.
+          shared_example_groups.merge!(shared_examples || {}) rescue nil
+      end
+    end
+
+    def rspec_over_3?
+      version >= Gem::Version.new('3')
+    end
+
+    def replay_recorded_config
+      Proc.new do |config|
+        config_copy.persisted_config.each do |msg|
           config.send(msg[:method], *msg[:args], &msg[:block])
         end
       end
-      ::RSpec.world.shared_example_groups.merge!(self.shared_examples_groups || {}) rescue nil
-
-    else
-      # record
-      real_config = ::RSpec.configuration
-      self.recorded_config = []
-      self.proxy = Proxy.new(self.recorded_config, real_config)
-      ::RSpec.configuration = self.proxy
-      yield
-      ::RSpec.configuration = real_config
-      self.shared_examples_groups = ::RSpec.world.shared_example_groups.dup rescue nil
-
-      # rspec-rails/lib/rspec/rails/view_rendering.rb add methods on the
-      # configuration singleton. Need advice to copy them without going down
-      # the road with object2module.
     end
 
-    # Well, instead of copying them, we redirect them to the configuration
-    # proxy. Looks like it good enough.
-    proxy = self.proxy
-    ::RSpec.configuration.singleton_class.send(:define_method, :method_missing) do |method, *args, &block|
-      proxy.send(method, *args, &block)
+    def have_recording?
+      self.config_copy
     end
 
-  end
-end
-
-class Proxy < Struct.new(:output, :target)
-  [:include, :extend].each do |method|
-    define_method(method) do |*args|
-      method_missing(method, *args)
+    def shared_examples
+      recorded_registry.
+        send(:shared_example_groups)[:main] rescue recorded_registry
     end
-  end
 
-  def method_missing(method, *args, &block)
-    self.output << {:method => method, :args => args, :block => block}
-    self.target.send(method, *args, &block)
-  end
-end
-
-# For compatibility with Ruby 1.8.x outside of the Rails framework
-if RUBY_VERSION =~ /1.8/
-  unless defined?(Rails)
-    class Object
-      def singleton_class
-        class << self; self; end
-      end
+    def version
+      Gem.loaded_specs['rspec-core'].version
     end
   end
 end

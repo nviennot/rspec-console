@@ -4,6 +4,8 @@ RSpec Console
 RSpec Console allows you to run your RSpec tests in a Rails console.
 Best served chilled with [irb-config](https://github.com/nviennot/irb-config).
 
+It is especially helpful when working with [jRuby](http://jruby.org/), because it will keep an active JVM running for you. This drastically reduces the feedback loop of doing TDD in jRuby -- and all without messing with nail-gun!
+
 ### Watch the screencast
 
 [![Watch the screencast!](https://s3.amazonaws.com/velvetpulse/screencasts/irb-config-screencast.jpg)](http://velvetpulse.com/2012/11/19/improve-your-ruby-workflow-by-integrating-vim-tmux-pry/)
@@ -63,7 +65,7 @@ Finished in 0.12654 seconds
 TODO
 ----
 
-* Testing
+* Get tests to 100% coverage. Currently at 106 / 118 LOC (89.83%) covered.
 
 License
 -------

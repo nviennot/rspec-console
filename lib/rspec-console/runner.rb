@@ -1,44 +1,18 @@
-class RSpecConsole::Runner
-  class << self
-    def reset(args)
-      require 'rspec/core'
+# This class wraps the core rspec runner and manages the environment around it.
+module RSpecConsole
+  class Runner
+    class << self
+      def run(args)
+        RSpecConsole.hooks.each(&:call)
 
-      if Gem.loaded_specs['rspec-core'].version < Gem::Version.new('2.9.10')
-        raise 'Please use RSpec 2.9.10 or later'
-      end
+        RSpecConsole::RSpecLastRunState.reset
 
-      ::RSpec::Core::Runner.disable_autorun!
-      ::RSpec::Core::Configuration.class_eval { define_method(:command) { 'rspec' } }
-      ::RSpec.reset
-
-      config_cache.cache do
-        ::RSpec.configure do |config|
-          config.output_stream = STDOUT
-          config.color_enabled = true if config.respond_to?(:color_enabled=)
-          config.color         = true if config.respond_to?(:color=)
-        end
-
-        $LOAD_PATH << './spec'
-        require "spec_helper"
-        begin
-          require "rails_helper"
-        rescue LoadError
+        if defined?(::RSpec::Core::CommandLine)
+          ::RSpec::Core::CommandLine.new(args).run(STDERR, STDOUT)
+        else
+          ::RSpec::Core::Runner.run(args, STDERR, STDOUT)
         end
       end
-    end
-
-    def run(args)
-      RSpecConsole.hooks.each(&:call)
-      reset(args)
-      if defined?(::RSpec::Core::CommandLine)
-        ::RSpec::Core::CommandLine.new(args).run(STDERR, STDOUT)
-      else
-        ::RSpec::Core::Runner.run(args, STDERR, STDOUT)
-      end
-    end
-
-    def config_cache
-      @config_cache ||= RSpecConsole::ConfigCache.new
     end
   end
 end
