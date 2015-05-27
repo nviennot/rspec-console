@@ -1,6 +1,12 @@
 # This is a fixture for the tests
 # This is *not* the actual tests for rspec-console (see in ./test)
 
+unless $running_with_minitest
+  STDERR.puts "These are the fixtures for the test written with minitest"
+  STDERR.puts "Run `rake` to run the test suite"
+  exit
+end
+
 RSpec.configure do |config|
   config.before(:all) { $rspec.config_before_all }
 end

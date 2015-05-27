@@ -6,7 +6,7 @@ require 'minitest/pride'
 require 'minitest/spec'
 
 puts "Testing with rspec version #{Gem.loaded_specs['rspec-core'].version}"
-
+$running_with_minitest = true
 
 class Minitest::Test
   class CatchAll < Struct.new(:messages)
