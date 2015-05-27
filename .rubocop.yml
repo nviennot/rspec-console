@@ -1,5 +1,0 @@
-inherit_from: ../.rubocop.yml
-
-# Multi-line method chaining should be done with leading dots.
-Style/DotPosition:
-  EnforcedStyle: leading
