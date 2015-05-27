@@ -2,16 +2,15 @@
 module RSpecConsole
   class Runner
     class << self
-      def run(args)
-        RSpecConsole.hooks.each(&:call)
+      def run(args, options={})
+        RSpecConsole.before_run_callbacks.each(&:call)
 
-        RSpecConsole::RSpecLastRunState.reset
+        RSpecConsole::RSpecState.reset
 
-        if defined?(::RSpec::Core::CommandLine)
-          ::RSpec::Core::CommandLine.new(args).run(STDERR, STDOUT)
-        else
-          ::RSpec::Core::Runner.run(args, STDERR, STDOUT)
-        end
+        stdout = options[:stdout] || $stdout
+        stderr = options[:stderr] || $stderr
+
+        ::RSpec::Core::Runner.run(args, stderr, stdout)
       end
     end
   end
