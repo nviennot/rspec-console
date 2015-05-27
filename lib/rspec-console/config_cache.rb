@@ -11,7 +11,7 @@ class RSpecConsole::ConfigCache
   # Instead, we proxy and record whatever is done to RSpec.configuration during
   # the first invocation of require('spec_helper').  This is done by interposing
   # the RecordingProxy class on of RSpec.configuration.
-  attr_accessor :config_proxy, :shared_examples_copy
+  attr_accessor :config_proxy, :root_shared_examples
 
   class RecordingProxy < Struct.new(:target, :recorded_messages)
     [:include, :extend].each do |method|
@@ -69,30 +69,27 @@ class RSpecConsole::ConfigCache
   end
 
   def stash_shared_examples
-    if rspec2?
-      self.shared_examples_copy = ::RSpec.world.shared_example_groups.dup
-    else
-      self.shared_examples_copy = ::RSpec.world.shared_example_group_registry
-                                    .send(:shared_example_groups).dup
+    self.root_shared_examples = case shared_example_api
+      when :v1 then ::RSpec.world.shared_example_groups.dup
+      when :v2 then ::RSpec.world.shared_example_group_registry.send(:shared_example_groups).dup
     end
-  rescue Exception => e
-    STDERR.puts "[rspec-console] WARN: #{e.class} #{e}"
   end
 
   def restore_shared_examples
-    return if self.shared_examples_copy.nil?
-
-    if rspec2?
-      ::RSpec.world.shared_example_groups.merge!(self.shared_examples_copy)
-    else
-      self.shared_examples_copy.each do |context, name_blocks|
+    case shared_example_api
+    when :v1 then ::RSpec.world.shared_example_groups.merge!(self.root_shared_examples)
+    when :v2
+      self.root_shared_examples.each do |context, name_blocks|
         name_blocks.each do |name, block|
           ::RSpec.world.shared_example_group_registry.add(context, name, &block)
         end
       end
     end
-  rescue Exception => e
-    STDERR.puts "[rspec-console] WARN: #{e.class} #{e}"
+  end
+
+  def shared_example_api
+    return :v1 if ::RSpec.world.respond_to?(:shared_example_groups)
+    return :v2 if ::RSpec.world.respond_to?(:shared_example_group_registry)
   end
 
   def ensure_configuration_setter!
@@ -103,9 +100,5 @@ class RSpecConsole::ConfigCache
         @configuration = value
       end
     end
-  end
-
-  def rspec2?
-    Gem.loaded_specs['rspec-core'].version < Gem::Version.new('3')
   end
 end
