@@ -19,7 +19,7 @@ module RSpecConsole
 
   # We only want the test env
   before_run do
-    if defined?(Rails) && !Rails.env =~ /test/
+    if defined?(Rails) && !(Rails.env =~ /test/)
       raise 'Please run in test mode (run `rails console test`).'
     end
   end

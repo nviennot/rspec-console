@@ -41,4 +41,9 @@ class BasicTest < Minitest::Test
     assert_rspec_methods [:config_before_all, :fail1]
     assert_rspec_output :examples => 1, :failures => 1
   end
+
+  def test_all
+    rspec_run()
+    assert_rspec_output :examples => 11, :failures => 1
+  end
 end

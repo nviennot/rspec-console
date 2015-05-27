@@ -4,7 +4,6 @@ module RSpecConsole
     class << self
       def run(args, options={})
         RSpecConsole.before_run_callbacks.each(&:call)
-
         RSpecConsole::RSpecState.reset
 
         stdout = options[:stdout] || $stdout
