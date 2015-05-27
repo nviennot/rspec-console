@@ -1,0 +1,13 @@
+language: ruby
+rvm:
+  - 2.2
+script: bundle exec rake test
+notifications:
+  email:
+    on_success: never
+    on_failure: change
+gemfile:
+  - gemfiles/rspec_2_10_0.Gemfile
+  - gemfiles/rspec_2_14_1.Gemfile
+  - gemfiles/rspec_3_0_0.Gemfile
+  - gemfiles/rspec_latest.Gemfile
