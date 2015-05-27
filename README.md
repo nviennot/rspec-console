@@ -1,4 +1,4 @@
-RSpec Console
+RSpec Console [![Build Status](https://travis-ci.org/nviennot/rspec-console.svg)](https://travis-ci.org/nviennot/rspec-console)
 =============
 
 RSpec Console allows you to run your RSpec tests in a Rails console.
@@ -62,10 +62,12 @@ Finished in 0.12654 seconds
 ~/prj/crowdtap/sniper (test) >
 ```
 
-TODO
-----
+Authors
+-------
 
-* Write integration tests.
+* [Alex Moore-Niemi](https://github.com/mooreniemi)
+* Nicolas Viennot
+
 
 License
 -------
