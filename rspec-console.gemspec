@@ -4,7 +4,7 @@ $:.unshift File.expand_path("../../lib", __FILE__)
 
 Gem::Specification.new do |s|
   s.name        = "rspec-console"
-  s.version     = '0.6'
+  s.version     = '0.6.1'
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Nicolas Viennot"]
   s.email       = ["nicolas@viennot.biz"]
