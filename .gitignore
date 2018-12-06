@@ -36,3 +36,6 @@ build/
 
 Gemfile.lock
 gemfiles/*.lock
+
+# IDE
+.idea/
